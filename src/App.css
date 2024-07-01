@@ -1,0 +1,16 @@
+
+
+.head{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.ham{
+    border: 1px solid black;
+    border-radius: 0.5px;
+}
+.structure{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
