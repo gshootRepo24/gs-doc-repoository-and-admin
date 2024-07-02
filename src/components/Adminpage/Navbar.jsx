@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AppBar, Toolbar, Typography } from '@mui/material';
 import './Navbar.css';
-import AddUser from './administrator/AddUser';
+import AddUser from './administrator/AddUser/AddUser';
 import SitesPage from './administrator/SitesPage';
 import PendingPage from './administrator/PendingPage';
 import GroupManagement from './administrator/GroupPage';

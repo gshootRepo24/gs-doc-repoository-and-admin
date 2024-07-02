@@ -10,7 +10,7 @@ import Home from './components/dashboard/Home';
 import AdminPage from './components/Adminpage/AdminPage';
 import AdminSetting from './components/Adminpage/AdminSetting';
 import GroupManagement from './components/Adminpage/administrator/GroupPage';
-import AddUser from './components/Adminpage/administrator/AddUser';
+import AddUser from './components/Adminpage/administrator/AddUser/AddUser';
 import AddKeywords from './components/Adminpage/administrator/AddKeywords';
 
 function App() {
@@ -36,10 +36,10 @@ function App() {
           <Route  path="/web" element={ <Login />  }  />
           <Route  path="/user" element={ <Login />  }  />
 
-          {/*<Route path='/admin' element={<Login isAdmin={true} />} />*/ }
+          <Route path='/admin' element={<Login isAdmin={true} />} /> 
           <Route path='/home' Component={Home}/>
 
-          {/* <Route path='/setting' Component={AdminPage}/>   */}
+          { <Route path='/setting' Component={AdminPage}/>   }
           {/* <Route path='/group' Component={GroupManagement}/> 
           <Route path='/user' Component={AddUser}/>
           <Route path='/keyword' Component={AddKeywords}/> */}

@@ -1,8 +1,11 @@
-import React, { useState } from "react";
-import { Container, Paper, Box, Typography, Button, TextField, Tab, Tabs, Switch, TextareaAutosize } from '@mui/material';
+import React, { useState, useEffect } from "react";
+import { Container, Paper, Box, Typography, Button, TextField, Tab, Tabs, Switch, TextareaAutosize, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import GroupIcon from '@mui/icons-material/Group';
 // import Sidebar from "../Sidebar";
 import Navbar from "../Navbar";
-
+ import { getGroupList } from './../../../api calls/getGroupList';  
+import { addGroup } from './../../../api calls/addgroup';  
+import "./GroupPage.css"
 
 const TabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -22,13 +25,9 @@ const GroupManagement = () => {
   const [tabValue, setTabValue] = useState(0);
   const [owner, setOwner] = useState('');
   const [parentGroup, setParentGroup] = useState('');
-  const [groupName, setGroupName] = useState(''); // State for group name
-  const [associatedUsers, setAssociatedUsers] = useState([]); 
-  const [users, setUsers] = useState([]); 
-
-  const [roles, setRoles] = useState([]); // State to manage available roles
-  const [assignedRoles, setAssignedRoles] = useState([]); // State to manage assigned roles
-
+  const [groupName, setGroupName] = useState('');
+  const [associatedUsers, setAssociatedUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [privileges, setPrivileges] = useState({
     "Create User/Group/Role": false,
     "Modify User/Group/Role": false,
@@ -41,6 +40,22 @@ const GroupManagement = () => {
     "Manage Data Security": false,
     "View Data Security": false,
   });
+
+  const [groupList, setGroupList] = useState([]);
+
+  useEffect(() => {
+    const fetchGroupList = async () => {
+      try {
+        const data = await getGroupList();
+        setGroupList(data.groups.group);
+      } catch (error) {
+        console.error('Error fetching group list:', error);
+      }
+    };
+
+    fetchGroupList();
+  }, []);
+  
 
   const handleChange = (event, newValue) => {
     setTabValue(newValue);
@@ -58,58 +73,72 @@ const GroupManagement = () => {
     setPrivileges({ ...privileges, [name]: event.target.checked });
   };
 
-  const handleAssociateUser = (user) => {
-    setAssociatedUsers([...associatedUsers, user]);
-    setUsers(users.filter(u => u !== user));
+  const handleAssociatedUsers = (event) => {
+    setAssociatedUsers(event.target.value);
   };
 
-  const handleDissociateUser = (user) => {
-    setUsers([...users, user]); // Add user back to available users list
-    setAssociatedUsers(associatedUsers.filter(u => u !== user));
-  };
-
-  const handleSearchUsers = (event) => {
-    const searchTerm = event.target.value.toLowerCase();
-    // Filter users based on the search term
-  };
-
-  const handleSearchAssociatedUsers = (event) => {
-    const searchTerm = event.target.value.toLowerCase();
-    // Filter associated users based on the search term
-  };
-
-  
-
-  
-
-  const handleSearchRoles = (event) => {
-    const searchTerm = event.target.value.toLowerCase();
-    // Filter roles based on the search term
-  };
-
-  const handleSearchAssignedRoles = (event) => {
-    const searchTerm = event.target.value.toLowerCase();
-    // Filter assigned roles based on the search term
+  const handleRoles = (event) => {
+    setRoles(event.target.value);
   };
 
   const handleSave = () => {
-    // Implement save functionality
-    console.log('Details saved');
+    const data = {
+      groupName: groupName,
+      privileges: Object.keys(privileges).filter(privilege => privileges[privilege]).join(', '),
+      comment: groupName,
+      groupType: 'G',
+      ownerIndex: owner,
+      parentGroup: parentGroup,
+      associatedUsers: associatedUsers.join(', '),
+      roles: roles.join(', '),
+    };
+
+    addGroup(data)
+      .then(response => {
+        console.log(response);
+  
+      })
+      .catch(error => {
+        console.error(error);
+      
+      });
+  };
+
+  const handleGroupClick = (groupName) => {
+    console.log(`Clicked on group: ${groupName}`);
+    setGroupName(`${groupName}`);
+    setOwner(`${ownerName}`);
+    //setParentGroup(`${}`);
+    setPrivileges(`${privileges  }`);
   };
 
   return (
-    <Container maxWidth="lg" style={{ display: 'flex', justifyContent: 'flex-start', marginRight: '10px' }}>
-      <Box sx={{ width: '50%', marginRight: '20px' }}>
-        <Paper style={{ padding: '20px' }}>
+    <>
+    <Container maxWidth="lg" style={{ display: 'flex', justifyContent: 'flex-start', marginRight: '10px', height: '100vh' }}>
+      <Box sx={{ width: '25%', marginRight: '1px' }}>
+        <Paper style={{ paddingTop: '20px', height: '100%' }}>
           <Typography variant="h5">Group</Typography>
           <Box marginTop="20px">
             <TextField variant="outlined" placeholder="Search..." fullWidth />
+          </Box>
+          <Box marginTop="20px" style={{ overflowY: 'auto', height: 'calc(100% - 64px)' }}>
+            <Typography variant="h6">Group List</Typography>
+            <List>
+                {Array.isArray(groupList) && groupList.map((group, index) => (
+                  <ListItem key={index} onClick={() => handleGroupClick(group.groupName)}>
+                    <ListItemIcon>
+                      <GroupIcon />
+                    </ListItemIcon>
+                    <ListItemText primary={group.groupName} />
+                  </ListItem>
+                ))}
+              </List>
           </Box>
         </Paper>
       </Box>
 
       <Box sx={{ width: '50%' }}>
-        <Paper style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+        <Paper style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%', overflowY: 'auto' }}>
           <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <TextareaAutosize
@@ -119,7 +148,7 @@ const GroupManagement = () => {
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
               />
-              <Button variant="contained" color="primary" >Create +</Button>
+              <Button variant="contained" color="primary">Create +</Button>
             </Box>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <Tabs value={tabValue} onChange={handleChange} aria-label="basic tabs example">
@@ -141,47 +170,12 @@ const GroupManagement = () => {
                 <Typography variant="subtitle1">Assign Users</Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
                   <TextField
-                    placeholder="Search User(s) to associate"
+                    placeholder="Assign users"
+                    value={associatedUsers}
                     fullWidth
-                    onChange={handleSearchUsers}
+                    onChange={handleAssociatedUsers}
                     variant="outlined"
                   />
-                  <Button variant="contained" color="primary" onClick={() => handleAssociateUser('user1')}>
-                    Associate All
-                  </Button>
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Typography variant="subtitle1">User(s)</Typography>
-                  {users.map((user, index) => (
-                    <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography>{user}</Typography>
-                      <Button variant="contained" color="primary" onClick={() => handleAssociateUser(user)}>
-                        Associate
-                      </Button>
-                    </Box>
-                  ))}
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-                  <TextField
-                    placeholder="Search associated User(s)"
-                    fullWidth
-                    onChange={handleSearchAssociatedUsers}
-                    variant="outlined"
-                  />
-                  <Button variant="contained" color="primary" onClick={() => handleDissociateUser('user1')}>
-                    Dissociate All
-                  </Button>
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Typography variant="subtitle1">Associated User(s)</Typography>
-                  {associatedUsers.map((user, index) => (
-                    <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography>{user}</Typography>
-                      <Button variant="contained" color="primary" onClick={() => handleDissociateUser(user)}>
-                        Dissociate
-                      </Button>
-                    </Box>
-                  ))}
                 </Box>
               </Box>
             </TabPanel>
@@ -192,8 +186,9 @@ const GroupManagement = () => {
                   <Typography>Associated User(s)</Typography>
                   <TextField
                     placeholder="Search users to associate roles"
+                    value={associatedUsers}
                     fullWidth
-                    onChange={handleSearchUsers}
+                    onChange={handleAssociatedUsers}
                     variant="outlined"
                   />
                 </Box>
@@ -201,8 +196,9 @@ const GroupManagement = () => {
                   <Typography>Roles</Typography>
                   <TextField
                     placeholder="Search roles"
+                    value={roles}
                     fullWidth
-                    onChange={handleSearchRoles}
+                    onChange={handleRoles}
                     variant="outlined"
                   />
                 </Box>
@@ -284,18 +280,15 @@ const GroupManagement = () => {
               </Box>
             </TabPanel>
           </Box>
-          <Box display="flex" justifyContent="flex-end" mt={2}>
-            <Button variant="contained" color="primary" onClick={handleSave}>Save</Button>
-          </Box>
+          
         </Paper>
       </Box>
     </Container>
+    <Box display="flex" justifyContent="flex-end" mt={2}>
+    <Button variant="contained" color="primary" onClick={handleSave}>Save</Button>
+  </Box>
+  </>
   );
 };
 
-export default GroupManagement ;
-
-
-
-
-
+export default GroupManagement;
