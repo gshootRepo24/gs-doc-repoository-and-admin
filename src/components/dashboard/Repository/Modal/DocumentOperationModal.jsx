@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Box, Typography, List, ListItem, ListItemText, Divider } from '@mui/material';
 import ForwardIcon from '@mui/icons-material/Forward';
 import AlarmIcon from '@mui/icons-material/Alarm';
@@ -15,10 +15,31 @@ import CopyModal from './CopyDocumentsModal';
 import MoveDocumentModal from './MoveDocumentModal';
 import copyDocument from '../../../../api calls/duplicateDocument';
 
-const OptionsModal = ({ modalOpen, handleModalClose, anchorEl, parentFolder, documentIndex, reload, setReload }) => {
+const decodeLoginUserRights = (rights) => {
+  return {
+    reserved1: (rights & (1 << 0)) !== 0,
+    viewMetaData: (rights & (1 << 1)) !== 0,
+    create: (rights & (1 << 2)) !== 0,
+    modifyMetaData: (rights & (1 << 3)) !== 0,
+    delete: (rights & (1 << 4)) !== 0,
+    annotate: (rights & (1 << 5)) !== 0,
+    reserved2: (rights & (1 << 6)) !== 0,
+    print: (rights & (1 << 7)) !== 0,
+    copy: (rights & (1 << 8)) !== 0,
+    viewSecuredData: (rights & (1 << 9)) !== 0,
+    viewContent: (rights & (1 << 10)) !== 0,
+    modifyContent: (rights & (1 << 11)) !== 0,
+  };
+};
+
+const OptionsModal = ({ modalOpen, handleModalClose, anchorEl, parentFolder, documentIndex, reload, setReload, userRights, setUserRights }) => {
   const [copyModalOpen, setCopyModalOpen] = useState(false);
   const [moveDocumentModalOpen, setMoveDocumentModalOpen] = useState(false);
+  const [rights,setRights]= useState({});
 
+  useEffect(()=>{
+    setRights(decodeLoginUserRights(userRights));
+  },[userRights])
   const handleCopyClick = () => {
     setCopyModalOpen(true);
     handleModalClose();
@@ -131,18 +152,18 @@ const OptionsModal = ({ modalOpen, handleModalClose, anchorEl, parentFolder, doc
               <AlarmIcon sx={{ mr: 1 }} />
               <ListItemText primary="Alarms" />
             </ListItem>
-            <ListItem button aria-label="Print">
+            { rights.print && <ListItem button aria-label="Print">
               <PrintIcon sx={{ mr: 1 }} />
               <ListItemText primary="Print" />
-            </ListItem>
+            </ListItem>}
             <ListItem button aria-label="Share">
               <ShareIcon sx={{ mr: 1 }} />
               <ListItemText primary="Share" />
             </ListItem>
-            <ListItem button aria-label="Download">
+            { <ListItem button aria-label="Download">
               <DownloadIcon sx={{ mr: 1 }} />
               <ListItemText primary="Download" />
-            </ListItem>
+            </ListItem>}
             <Divider />
             <ListItem button aria-label="Versions">
               <VersionsIcon sx={{ mr: 1 }} />
@@ -157,22 +178,22 @@ const OptionsModal = ({ modalOpen, handleModalClose, anchorEl, parentFolder, doc
               <ListItemText primary="Check Out" />
             </ListItem>
             <Divider />
-            <ListItem button aria-label="Delete">
+            {rights.delete && <ListItem button aria-label="Delete">
               <DeleteIcon sx={{ mr: 1 }} />
               <ListItemText primary="Delete" />
-            </ListItem>
-            <ListItem button aria-label="Move" onClick={handleMoveClick}>
+            </ListItem>}
+            {rights.copy &&  <ListItem button aria-label="Move" onClick={handleMoveClick}>
               <MoveIcon sx={{ mr: 1 }} />
               <ListItemText primary="Move" />
-            </ListItem>
-            <ListItem button aria-label="Copy" onClick={handleCopyClick}>
+            </ListItem>}
+            {rights.copy &&  <ListItem button aria-label="Copy" onClick={handleCopyClick}>
               <FileCopyIcon sx={{ mr: 1 }} />
               <ListItemText primary="Copy" />
-            </ListItem>
-            <ListItem button aria-label="Duplicate" onClick={handleDuplicateClick}>
+            </ListItem>}
+            {rights.copy && <ListItem button aria-label="Duplicate" onClick={handleDuplicateClick}>
               <FileCopyIcon sx={{ mr: 1 }} />
               <ListItemText primary="Duplicate" />
-            </ListItem>
+            </ListItem>}
           </List>
         </Box>
       </Modal>

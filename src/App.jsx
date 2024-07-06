@@ -34,10 +34,10 @@ function App() {
           <Route  path="/"  element={ <Login />  }  />
           <Route  path="/login" element={ <Login />  }  />
           <Route  path="/web" element={ <Login />  }  />
-          <Route  path="/user" element={ <Login />  }  />
+          
 
           <Route path='/admin' element={<Login isAdmin={true} />} /> 
-          <Route path='/home' Component={Home}/>
+          <Route path='/user' Component={Home}/>
 
           { <Route path='/setting' Component={AdminPage}/>   }
           {/* <Route path='/group' Component={GroupManagement}/> 

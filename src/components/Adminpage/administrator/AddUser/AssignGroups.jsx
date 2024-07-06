@@ -16,7 +16,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import GroupIcon from '@mui/icons-material/Group';
 import { addMemberToGroups } from "../../../../api calls/addMemberToGroup";
 
-const AssignGroups = ({ currGroups, associatedUsers, selectedUserIndex, userDbId }) => {
+const AssignGroups = ({ currGroups, associatedUsers, selectedUserIndex,userDbId ,setUpdatedGroups}) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [associatedSearchTerm, setAssociatedSearchTerm] = useState("");
   const [availableGroups, setAvailableGroups] = useState([]);
@@ -41,22 +41,20 @@ const AssignGroups = ({ currGroups, associatedUsers, selectedUserIndex, userDbId
     }));
   };
 
-  const handleAssociateUser = async (group) => {
+  const handleAssociateUser = (group) => {
     const updatedAssociatedGroups = [...associatedGroups, group];
     setAssociatedGroups(updatedAssociatedGroups);
     setAvailableGroups((prev) =>
       prev.filter((grp) => grp.groupName !== group.groupName)
     );
 
-    try {
       const transformedGroups = transformGroups(updatedAssociatedGroups);
-      await addMemberToGroups(userDbId, selectedUserIndex, transformedGroups);
-    } catch (error) {
-      console.error('Error associating group:', error);
-    }
+      console.log('updated groups of user after adding are: ', transformedGroups);
+      setUpdatedGroups(transformedGroups);
+      //await addMemberToGroups(userDbId, selectedUserIndex, transformedGroups);
   };
 
-  const handleDissociateUser = async (group) => {
+  const handleDissociateUser = (group) => {
     const updatedAssociatedGroups = associatedGroups.filter((grp) => grp.groupName !== group.groupName);
     setAssociatedGroups(updatedAssociatedGroups);
     setAvailableGroups((prev) => {
@@ -68,12 +66,10 @@ const AssignGroups = ({ currGroups, associatedUsers, selectedUserIndex, userDbId
       return prev;
     });
 
-    try {
       const transformedGroups = transformGroups(updatedAssociatedGroups);
-      await addMemberToGroups(userDbId, selectedUserIndex, transformedGroups);
-    } catch (error) {
-      console.error('Error dissociating group:', error);
-    }
+      console.log('updated groups of user after removing are: ', transformedGroups);
+      setUpdatedGroups(transformedGroups);
+      //await addMemberToGroups(userDbId, selectedUserIndex, transformedGroups);
   };
 
   const filteredGroups = availableGroups.filter((group) =>

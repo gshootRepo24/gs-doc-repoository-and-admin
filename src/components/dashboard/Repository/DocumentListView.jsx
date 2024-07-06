@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Checkbox,
   IconButton,
@@ -15,14 +15,70 @@ import {
   Typography,
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropDown';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropUp';
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import StarButton from '../../../shared/StarCheckBox';
 import OptionsModal from './Modal/DocumentOperationModal';
 import './DocumentListView.scss';
 import getDocumentBuffer from '../../../api calls/getDocument';
-import DocumentListViewTest from './DocumentListViewTest.json';
 import FileViewerModal from './Modal/FileViewerModal';
+import { toast } from 'react-toastify';
+
+const decodeLoginUserRights = (rights) => {
+  return {
+    reserved1: (rights & (1 << 0)) !== 0,
+    viewMetaData: (rights & (1 << 1)) !== 0,
+    create: (rights & (1 << 2)) !== 0,
+    modifyMetaData: (rights & (1 << 3)) !== 0,
+    delete: (rights & (1 << 4)) !== 0,
+    annotate: (rights & (1 << 5)) !== 0,
+    reserved2: (rights & (1 << 6)) !== 0,
+    print: (rights & (1 << 7)) !== 0,
+    copy: (rights & (1 << 8)) !== 0,
+    viewSecuredData: (rights & (1 << 9)) !== 0,
+    viewContent: (rights & (1 << 10)) !== 0,
+    modifyContent: (rights & (1 << 11)) !== 0,
+  };
+};
+
+const base64ToBlob = (base64, fileType) => {
+  const byteCharacters = atob(base64);
+  const byteNumbers = new Array(byteCharacters.length);
+
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: fileType });
+};
+
+const getMimeType = (fileExtension) => {
+  switch (fileExtension.toLowerCase()) {
+    case 'pdf':
+      return 'application/pdf';
+    case 'doc':
+    case 'docx':
+      return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    case 'ppt':
+    case 'pptx':
+      return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+    case 'xls':
+    case 'xlsx':
+      return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'png':
+      return 'image/png';
+    case 'gif':
+      return 'image/gif';
+    case 'txt':
+      return 'text/plain';
+    default:
+      return 'application/octet-stream';
+  }
+};
 
 const TruncatedText = ({ text }) => (
   <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -33,18 +89,6 @@ const TruncatedText = ({ text }) => (
 const getIcon = (fileType) => {
   const iconPath = `/${fileType}.svg`;
   return <img className='margin-document-name' src={iconPath} alt={`${fileType} icon`} style={{ width: '24px', height: '24px' }} />;
-};
-
-const base64ToBlob = (base64, fileType) => {
-  const byteCharacters = atob(base64);
-  const byteNumbers = new Array(byteCharacters.length);
-  
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  
-  const byteArray = new Uint8Array(byteNumbers);
-  return new Blob([byteArray], { type: fileType });
 };
 
 const DocumentListView = ({
@@ -67,6 +111,8 @@ const DocumentListView = ({
   setLookInFolderVolumeIdx,
   reload,
   setReload,
+  userRights,
+  setUserRights,
 }) => {
   const [arrowDirections, setArrowDirections] = useState({
     name: 'up',
@@ -80,6 +126,8 @@ const DocumentListView = ({
   const [fileType, setFileType] = useState('');
   const [fileModalOpen, setFileModalOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  const rights = decodeLoginUserRights(userRights);
 
   const toggleArrowDirection = (column) => {
     setBatchNumber(1);
@@ -138,56 +186,31 @@ const DocumentListView = ({
   };
 
   const handleDocumentClick = async (isindex, fileExtension, index) => {
+    if (rights.viewContent==true){
+      toast.warning('You do not have permission to view')
+      return;
+    } 
+
     try {
       let imageIndex = typeof isindex === 'string' ? isindex.split("#")[0] : '';
       const siteId = '1';
-  
+
       let response = await getDocumentBuffer(lookInFolderVolumeIdx, siteId, imageIndex);
       console.log('Document buffer data:', response);
-  
-      //const test = true;
-      //if (test) response = DocumentListViewTest;
-  
+
       const stream = response.documentStream;
       const mimeType = getMimeType(fileExtension);
       setFileType(mimeType);
-  
+
       const blob = base64ToBlob(stream, mimeType);
       const fileUrl = URL.createObjectURL(blob);
       console.log('Generated file URL:', fileUrl);
-  
+
       setFileUrl(fileUrl);
       setFileModalOpen(true);
       setCurrentIndex(index);
     } catch (error) {
       console.error('Error fetching document buffer:', error);
-    }
-  };
-
-  const getMimeType = (fileExtension) => {
-    switch (fileExtension.toLowerCase()) {
-      case 'pdf':
-        return 'application/pdf';
-      case 'doc':
-      case 'docx':
-        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      case 'ppt':
-      case 'pptx':
-        return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-      case 'xls':
-      case 'xlsx':
-        return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'txt':
-        return 'text/plain';
-      default:
-        return 'application/octet-stream';
     }
   };
 
@@ -283,17 +306,19 @@ const DocumentListView = ({
         documentIndex={documentIndex}
         reload={reload}
         setReload={setReload}
+        userRights={userRights}
+        setUserRights={setUserRights}
       />
       <FileViewerModal 
-      open={fileModalOpen} 
-      onClose={handleFileModalClose} 
-      fileUrl={fileUrl} 
-      fileType={fileType}
-      onNextFile={handleNextFile}
-      onPrevFile={handlePrevFile}
-      hasNextFile={currentIndex < data.searchResults.searchResult.length - 1}
-      hasPrevFile={currentIndex > 0}
-    />
+        open={fileModalOpen} 
+        onClose={handleFileModalClose} 
+        fileUrl={fileUrl} 
+        fileType={fileType}
+        onNextFile={handleNextFile}
+        onPrevFile={handlePrevFile}
+        hasNextFile={currentIndex < data.searchResults.searchResult.length - 1}
+        hasPrevFile={currentIndex > 0}
+      />
     </>
   );
 };

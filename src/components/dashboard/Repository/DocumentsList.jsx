@@ -17,6 +17,23 @@ const mockData = [
   { name: 'File 3', dataclass: 'Dataclass 3', owner: 'Owner 3', modifiedDate: '2024-03-30', isDeleted: false },
 ];
 
+const decodeLoginUserRights = (rights) => {
+  return {
+    reserved1: (rights & (1 << 0)) !== 0,
+    viewMetaData: (rights & (1 << 1)) !== 0,
+    create: (rights & (1 << 2)) !== 0,
+    modifyMetaData: (rights & (1 << 3)) !== 0,
+    delete: (rights & (1 << 4)) !== 0,
+    annotate: (rights & (1 << 5)) !== 0,
+    reserved2: (rights & (1 << 6)) !== 0,
+    print: (rights & (1 << 7)) !== 0,
+    copy: (rights & (1 << 8)) !== 0,
+    viewSecuredData: (rights & (1 << 9)) !== 0,
+    viewContent: (rights & (1 << 10)) !== 0,
+    modifyContent: (rights & (1 << 11)) !== 0,
+  };
+};
+
 const DocumentsList = (props) => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
@@ -29,6 +46,12 @@ const DocumentsList = (props) => {
   const [sortOrder, setSortOrder] = useState('A');
   const [numberOfDocs, setNumberOfDocs] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
+
+  const [rights,setRights]= useState({});
+
+  useEffect(()=>{
+    setRights(decodeLoginUserRights(props.userRights));
+  },[props.userRights])
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -107,7 +130,9 @@ const DocumentsList = (props) => {
     <Typography variant="h6" gutterBottom>Documents</Typography>
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
       <Button startIcon={<FilterListIcon />} onClick={() => {}} />
-      <Button startIcon={<AddIcon />} onClick={() => setModalOpen(true)} />
+      {
+        rights.create &&  <Button startIcon={<AddIcon />} onClick={() => setModalOpen(true)} /> 
+      }
       <Button onClick={handleViewClick} startIcon={viewType === 'list' ? <ViewListIcon /> : <ViewModuleIcon />} />
       <Menu
         anchorEl={viewAnchorEl}
@@ -154,6 +179,8 @@ const DocumentsList = (props) => {
           setLookInFolderVolumeIdx={props.setLookInFolderVolumeIdx}
           reload={props.reload}
           setReload={props.setReload}
+          userRights={props.userRights}
+          setUserRights={props.setUserRights}
         />
       )}
       {filesPresent && viewType === 'icon' && <IconView data={mockData} />}

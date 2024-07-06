@@ -44,6 +44,23 @@ const FolderBox = styled(Paper)(({ theme }) => ({
   justifyContent: 'space-between',
 }));
 
+const decodeLoginUserRights = (rights) => {
+  return {
+    reserved1: (rights & (1 << 0)) !== 0,
+    viewMetaData: (rights & (1 << 1)) !== 0,
+    create: (rights & (1 << 2)) !== 0,
+    modifyMetaData: (rights & (1 << 3)) !== 0,
+    delete: (rights & (1 << 4)) !== 0,
+    annotate: (rights & (1 << 5)) !== 0,
+    reserved2: (rights & (1 << 6)) !== 0,
+    print: (rights & (1 << 7)) !== 0,
+    copy: (rights & (1 << 8)) !== 0,
+    viewSecuredData: (rights & (1 << 9)) !== 0,
+    viewContent: (rights & (1 << 10)) !== 0,
+    modifyContent: (rights & (1 << 11)) !== 0,
+  };
+};
+
 const Repository = (props) => {
   // State variables
   const [loading, setLoading] = useState(true);
@@ -66,7 +83,12 @@ const Repository = (props) => {
   const [sortOrder, setSortOrder] = useState('A');
   const [numberOfFolders, setNumberOfFolders] = useState(1);
   const [listOfAddedFolders, setListOfAddedFolders] = useState([]);
+  const [rights,setRights]=useState({});
   const theme = useTheme();
+
+  useEffect(()=>{
+    setRights(decodeLoginUserRights(props.userRights));
+  },[props.userRights])
 
   useEffect(() => {
     setLoading(true);
@@ -204,7 +226,9 @@ const Repository = (props) => {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {/* Existing buttons */}
           <Button startIcon={<FilterListIcon />} onClick={handleFilterOpen} />
-          <Button startIcon={<AddIcon />} onClick={handleAddFolderOpenModal} />
+          {
+            rights.create &&  <Button startIcon={<AddIcon />} onClick={handleAddFolderOpenModal} />
+          }
           <Button onClick={handleViewClick} startIcon={viewType === 'list' ? <ViewListIcon /> : <ViewModuleIcon />}>
           </Button>
           <Menu anchorEl={viewAnchorEl} open={Boolean(viewAnchorEl)} onClose={handleViewClose}>
@@ -253,6 +277,8 @@ const Repository = (props) => {
           open={props.open}
           lookInFolderVolumeIdx={props.lookInFolderVolumeIdx}
           setLookInFolderVolumeIdx={props.setLookInFolderVolumeIdx}
+          userRights={props.userRights}
+          setUserRights={props.setUserRights}
         />
       )}
 

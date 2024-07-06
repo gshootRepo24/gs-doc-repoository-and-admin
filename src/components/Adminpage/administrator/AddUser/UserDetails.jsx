@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Box,
   TextField,
@@ -7,14 +7,15 @@ import {
   Grid,
   Paper,
   Button,
-  RadioGroup,
   FormControlLabel,
-  Radio
+  RadioGroup,
+  Radio,
 } from "@mui/material";
 import "./UserDetails.scss";
 import { addUser } from "../../../../api calls/addUser";
+import { toast } from "react-toastify";
 
-const UserDetails = ({ 
+const UserDetails = ({
   isUserSelected,
   tabValue,
   setTabValue,
@@ -51,11 +52,13 @@ const UserDetails = ({
   email,
   setEmail,
   comment,
-  setComment }) => {
+  setComment,
+}) => {
   const handlePasswordChange = (event) => setPassword(event.target.value);
   const handleConfirmPasswordChange = (event) =>
     setConfirmPassword(event.target.value);
-  const handlePersonalNameChange = (event) => setPersonalName(event.target.value);
+  const handlePersonalNameChange = (event) =>
+    setPersonalName(event.target.value);
   const handleLastNameChange = (event) => setLastName(event.target.value);
   const handleEmailChange = (event) => setEmail(event.target.value);
   const handleCommentChange = (event) => setComment(event.target.value);
@@ -107,194 +110,161 @@ const UserDetails = ({
     try {
       const response = await addUser(userDetails);
       if (response.status === 0) {
-        alert("User added successfully!");
+        toast.success("User added successfully!");
       } else {
-        alert("User adding failed!");
+        toast.error("User adding failed!");
       }
     } catch (error) {
-      alert("User adding failed!");
+      toast.error("User adding failed!");
     }
   };
 
   return (
-    <Box component={Paper} elevation={3} p={4} borderRadius={2} className="container">
+    <Box component={Paper} elevation={3} className="container">
       <form onSubmit={handleSubmit}>
-        <Grid container spacing={3}>
-          
-
-          {/* Primary Details Section */}
-          <Grid item xs={12}>
-            <Typography variant="h6" gutterBottom>
+        <Grid container spacing={2} style={{ padding: "12px" }}>
+          <Grid item xs={12} className="form-section" style={{ marginBottom: "16px" }}>
+            <Typography variant="h6" className="form-section__header">
               Primary Details
             </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={6} className="form-section__field">
+                <Typography>Domain User</Typography>
+                <Switch checked={isDomainUser} onChange={handleDomainUserChange} />
+              </Grid>
+              <Grid item xs={6} className="form-section__field">
+                <Typography>Generate Password</Typography>
+                <Switch checked={isGeneratePassword} onChange={handleGeneratePasswordChange} />
+              </Grid>
+              <Grid item xs={6} className="form-section__field">
+                <Typography>Password</Typography>
+                <TextField
+                  type="password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  placeholder="Enter Password"
+                  fullWidth
+                  variant="outlined"
+                  required
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ style: { padding: "6px" } }}
+                />
+              </Grid>
+              <Grid item xs={6} className="form-section__field">
+                <Typography>Confirm Password</Typography>
+                <TextField
+                  type="password"
+                  value={confirmPassword}
+                  onChange={handleConfirmPasswordChange}
+                  placeholder="Confirm Password"
+                  fullWidth
+                  variant="outlined"
+                  required
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ style: { padding: "6px" } }}
+                />
+              </Grid>
+              <Grid item xs={12} className="form-section__field" style={{ marginTop: "12px" }}>
+                <Typography>Password Settings</Typography>
+                <Box display="flex" alignItems="center">
+                  <FormControlLabel
+                    control={<Switch checked={neverExpires} onChange={handleChangenever} />}
+                    label="Never Expires"
+                  />
+                  <RadioGroup
+                    row
+                    value={neverExpires ? "never" : "expiry"}
+                    onChange={handleChangenever}
+                    className="radio-group"
+                  >
+                    <FormControlLabel value="expiry" control={<Radio />} label="Password Expiry Date" />
+                    <FormControlLabel value="days" control={<Radio />} label="Password Expiry Days" />
+                  </RadioGroup>
+                </Box>
+              </Grid>
+              <Grid item xs={6} className="form-section__field">
+                <Typography>Password Expiry Date</Typography>
+                <TextField
+                  type="date"
+                  value={neverExpires ? "" : expiryDate}
+                  onChange={handleExpiryDateChange}
+                  disabled={neverExpires}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  variant="outlined"
+                  inputProps={{ style: { padding: "6px" } }}
+                />
+              </Grid>
+            </Grid>
           </Grid>
 
-          <Grid item xs={6}>
-            <Typography>Domain user</Typography>
-            <Switch checked={isDomainUser} onChange={handleDomainUserChange} />
-          </Grid>
-
-          <Grid item xs={6}>
-            <Typography>Generate Password</Typography>
-            <Switch
-              checked={isGeneratePassword}
-              onChange={handleGeneratePasswordChange}
-            />
-          </Grid>
-
-          <Grid item xs={6}>
-            <Typography>Password</Typography>
-            <TextField
-              type="password"
-              value={password}
-              onChange={handlePasswordChange}
-              placeholder="Enter Password"
-              fullWidth
-              variant="outlined"
-              required
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={6}>
-            <Typography>Confirm Password</Typography>
-            <TextField
-              type="password"
-              value={confirmPassword}
-              onChange={handleConfirmPasswordChange}
-              placeholder="Confirm Password"
-              fullWidth
-              variant="outlined"
-              required
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={6}>
-            <Typography>Password Never Expires</Typography>
-            <Switch checked={neverExpires} onChange={handleChangenever} />
-          </Grid>
-
-          <Grid item xs={12}>
-            <RadioGroup
-              row
-              value={neverExpires ? "never" : "expiry"}
-              onChange={handleChangenever}
-            >
-              <FormControlLabel
-                value="expiry"
-                control={<Radio />}
-                label="Password Expiry Date"
-              />
-              <FormControlLabel
-                value="days"
-                control={<Radio />}
-                label="Password Expiry Days"
-              />
-            </RadioGroup>
-          </Grid>
-
-          <Grid item xs={6}>
-            <Typography>Password Expiry Date</Typography>
-            <TextField
-              type="date"
-              value={neverExpires ? "" : expiryDate}
-              onChange={handleExpiryDateChange}
-              disabled={neverExpires}
-              fullWidth
-              InputLabelProps={{
-                shrink: true,
-              }}
-              variant="outlined"
-            />
-          </Grid>
-
-          {/* Other Details Section */}
-          <Grid item xs={12}>
-            <Typography variant="h6" gutterBottom>
+          <Grid item xs={12} className="form-section" style={{ marginBottom: "16px" }}>
+            <Typography variant="h6" className="form-section__header">
               Other Details
             </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} className="form-section__field">
+                <TextField
+                  label="Personal Name"
+                  value={personalName}
+                  onChange={handlePersonalNameChange}
+                  fullWidth
+                  variant="outlined"
+                  required
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ style: { padding: "6px" } }}
+                />
+              </Grid>
+              <Grid item xs={12} className="form-section__field">
+                <TextField
+                  label="Last Name"
+                  value={lastName}
+                  onChange={handleLastNameChange}
+                  fullWidth
+                  variant="outlined"
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ style: { padding: "6px" } }}
+                />
+              </Grid>
+              <Grid item xs={12} className="form-section__field">
+                <TextField
+                  label="Email Id"
+                  value={email}
+                  onChange={handleEmailChange}
+                  fullWidth
+                  variant="outlined"
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ style: { padding: "6px" } }}
+                />
+              </Grid>
+              <Grid item xs={12} className="form-section__field">
+                <TextField
+                  label="Comment"
+                  value={comment}
+                  onChange={handleCommentChange}
+                  fullWidth
+                  variant="outlined"
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ style: { padding: "6px" } }}
+                />
+              </Grid>
+              {error && (
+                <Grid item xs={12} className="form-section__error">
+                  <Typography variant="body2" color="error">
+                    {error}
+                  </Typography>
+                </Grid>
+              )}
+            </Grid>
           </Grid>
 
-          <Grid item xs={12}>
-            <TextField
-              label="Personal Name"
-              value={personalName}
-              onChange={handlePersonalNameChange}
-              fullWidth
-              variant="outlined"
-              required
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              label="Last Name"
-              value={lastName}
-              onChange={handleLastNameChange}
-              fullWidth
-              variant="outlined"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              label="Email Id"
-              value={email}
-              onChange={handleEmailChange}
-              fullWidth
-              variant="outlined"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              label="Comment"
-              value={comment}
-              onChange={handleCommentChange}
-              fullWidth
-              variant="outlined"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Grid>
-
-          {error && (
-            <Grid item xs={12}>
-              <Typography color="error" variant="body2">
-                {error}
-              </Typography>
+          {!isUserSelected && (
+            <Grid item xs={12} className="button-container">
+              <Button variant="contained" color="primary" type="submit">
+                Create
+              </Button>
             </Grid>
           )}
-
-          <Grid item xs={12}>
-            {!isUserSelected && (
-              <Box display="flex" justifyContent="flex-end" mt={3}>
-                <Button variant="contained" color="primary" type="submit">
-                  Create
-                </Button>
-              </Box>
-            )}
-          </Grid>
-
-          {/* Space below the button */}
-          <Grid item xs={12}>
-            <Box mt={3} />
-          </Grid>
         </Grid>
       </form>
     </Box>

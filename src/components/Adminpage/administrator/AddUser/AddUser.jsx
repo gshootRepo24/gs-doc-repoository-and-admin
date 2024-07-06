@@ -12,6 +12,8 @@ import UserProfile from './UserProfile';
 import { changeUserProperty } from '../../../../api calls/changeUserProperties';
 import { getGroupOfUser } from '../../../../api calls/getGroupsOfUser';
 import { searchGroups } from '../../../../api calls/searchGroups';
+import { addMemberToGroups } from '../../../../api calls/addMemberToGroup';
+import { toast } from 'react-toastify';
 
 const AddUser = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -57,6 +59,7 @@ const AddUser = () => {
   const [currUserPrivilege, setCurrUserPrivilege] = useState(null);
   const [groupOfCurrUser, setGroupOfCurrUser] = useState([]);
   const [listOfAllGroups, setListOfAllGroups] = useState([]);
+  const [updatedGroups, setUpdatedGroups] = useState([]);
   
   useEffect(() => {
     const fetchData = async () => {
@@ -184,15 +187,16 @@ const AddUser = () => {
 
   const handleSave = async () => {
     if (selectedUserIndex === null) {
-      alert("Please select a user first");
+      toast.error("Please select a user first");      
       return;
     }
 
     try {
       const response = await changeUserProperty(selectedUserIndex, binaryString, password, firstName, expiryDate, comment, email);
+      await addMemberToGroups("123",selectedUserIndex,updatedGroups)
       console.log("Details saved with binary string:", binaryString);
       console.log("API response:", response);
-      alert("User details have been updated successfully");
+      toast.success("User details have been updated successfully");
     } catch (error) {
       console.error("Error saving user details:", error);
     }
@@ -229,7 +233,7 @@ const AddUser = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ height: "100vh", paddingTop: 4 }}>
+    <Container maxWidth="lg" sx={{ height: "100vh", paddingTop: 4, overflowY: "auto" }}>
       <Grid container spacing={2} sx={{ height: "100%" }}>
         {loading ? (
           <Grid item xs={12} display="flex" justifyContent="center" alignItems="center">
@@ -255,13 +259,6 @@ const AddUser = () => {
                 <Box>
                   <UserProfile isUserSelected={isUserSelected} selectedUserName={selectedUserName} selectedComment={selectedComment} firstName={firstName} setFirstName={setFirstName}/>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} mb={2}>
-                    <TextareaAutosize
-                      aria-label="empty textarea"
-                      placeholder="Enter group name"
-                      style={{ width: "200px", marginRight: "10px" }}
-                      value={groupName}
-                      onChange={(e) => setGroupName(e.target.value)}
-                    />
                   </Box>
                   <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
                     <Tabs value={tabValue} onChange={handleChange} aria-label="basic tabs example">
@@ -316,6 +313,7 @@ const AddUser = () => {
                       currGroups={listOfAllGroups || []}
                       associatedUsers={groupOfCurrUser || []}
                       selectedUserIndex={selectedUserIndex}
+                      setUpdatedGroups={setUpdatedGroups}
                     />
                   </TabPanel>
                   <TabPanel value={tabValue} index={2}>
