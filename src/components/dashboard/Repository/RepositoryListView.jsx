@@ -82,6 +82,7 @@ const ListViewModified = ({
   const [arrowDirection, setArrowDirection] = useState('up');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedFolderIndex, setSelectedFolderIndex] = useState(null);
+  const [currentFolderRights, setCurrentFolderRights] = useState(userRights);
   const rights = decodeLoginUserRights(userRights);
 
   const folders = data?.folders?.folder || [];
@@ -104,13 +105,11 @@ const ListViewModified = ({
     );
   }
 
-  
-
   const handleFolderClick = (item) => {
     setFileOpen(false);
     setLookInsideId(item.folderIndex);
     setLookInFolderVolumeIdx(item.imageVolumeIndex);
-    setUserRights(item.loginUserRights)
+    setUserRights(item.loginUserRights);
     setBreadcrumbs([...breadcrumbs, { name: item.folderName, index: item.folderIndex }]);
   };
 
@@ -121,15 +120,17 @@ const ListViewModified = ({
     setBatchNumber(1);
   };
 
-  const handleMenuOpen = (event, folderIndex) => {
+  const handleMenuOpen = (event, folderIndex, folderRights) => {
     setAnchorEl(event.currentTarget);
     setSelectedFolderIndex(folderIndex);
     setModalOpen(true);
+    setCurrentFolderRights(folderRights);
   };
 
   const handleModalClose = () => {
     setModalOpen(false);
     setAnchorEl(null);
+    setCurrentFolderRights(userRights);
   };
 
   return (
@@ -140,8 +141,8 @@ const ListViewModified = ({
         anchorEl={anchorEl}
         parentFolder={lookInsideId}
         folderIndex={selectedFolderIndex}
-        loginUserRights={userRights}      
-        />
+        loginUserRights={currentFolderRights}
+      />
       <TableContainer component={Paper} sx={{ maxHeight: '80vh', overflowY: 'auto', border: '1px solid #e0e0e0' }}>
         <Table stickyHeader>
           <TableHead>

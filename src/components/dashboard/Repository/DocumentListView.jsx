@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Checkbox,
   IconButton,
@@ -12,7 +12,6 @@ import {
   Tooltip,
   ButtonBase,
   Box,
-  Typography,
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
@@ -126,6 +125,7 @@ const DocumentListView = ({
   const [fileType, setFileType] = useState('');
   const [fileModalOpen, setFileModalOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentDocumentRights, setCurrentDocumentRights] = useState(userRights);
 
   const rights = decodeLoginUserRights(userRights);
 
@@ -152,15 +152,17 @@ const DocumentListView = ({
     setSortOrder((prev) => (prev === 'A' ? 'D' : 'A'));
   };
 
-  const handleMoreVertClick = (event, documentIdx) => {
+  const handleMoreVertClick = (event, documentIdx, documentRights) => {
     setAnchorEl(event.currentTarget);
     setDocumentIndex(documentIdx);
     setModalOpen(true);
+    setCurrentDocumentRights(documentRights);
   };
 
   const handleModalClose = () => {
     setModalOpen(false);
     setAnchorEl(null);
+    setCurrentDocumentRights(userRights);
   };
 
   const handleFileModalClose = () => {
@@ -186,10 +188,10 @@ const DocumentListView = ({
   };
 
   const handleDocumentClick = async (isindex, fileExtension, index) => {
-    if (rights.viewContent==true){
-      toast.warning('You do not have permission to view')
+    if (rights.viewContent == true) {
+      toast.warning('You do not have permission to view');
       return;
-    } 
+    }
 
     try {
       let imageIndex = typeof isindex === 'string' ? isindex.split("#")[0] : '';
@@ -289,7 +291,7 @@ const DocumentListView = ({
                   {item.document[0].revisedDateTime}
                 </TableCell>
                 <TableCell sx={{ padding: '4px', textAlign: 'right' }}>
-                  <IconButton onClick={(event) => { handleMoreVertClick(event, item.document[0].documentIndex) }}>
+                  <IconButton onClick={(event) => handleMoreVertClick(event, item.document[0].documentIndex, item.document[0].loginUserRights)}>
                     <MoreVertIcon />
                   </IconButton>
                 </TableCell>
@@ -308,6 +310,7 @@ const DocumentListView = ({
         setReload={setReload}
         userRights={userRights}
         setUserRights={setUserRights}
+        currentDocumentRights={currentDocumentRights}
       />
       <FileViewerModal 
         open={fileModalOpen} 
