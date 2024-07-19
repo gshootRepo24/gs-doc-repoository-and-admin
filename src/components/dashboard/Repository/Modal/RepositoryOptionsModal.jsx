@@ -193,10 +193,6 @@ const OptionsModal = ({ modalOpen, handleModalClose, anchorEl, parentFolder, fol
               <ShareIcon sx={{ mr: 1 }} />
               <ListItemText primary="Share" />
             </ListItem>
-            <ListItem button aria-label="Download">
-              <DownloadIcon sx={{ mr: 1 }} />
-              <ListItemText primary="Download" />
-            </ListItem>
             <Divider />
             {rights.viewMetaData && (
               <ListItem button aria-label="Versions">

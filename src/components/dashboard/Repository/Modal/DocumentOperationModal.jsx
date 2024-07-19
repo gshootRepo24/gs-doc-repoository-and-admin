@@ -160,10 +160,6 @@ const OptionsModal = ({ modalOpen, handleModalClose, anchorEl, parentFolder, doc
               <ShareIcon sx={{ mr: 1 }} />
               <ListItemText primary="Share" />
             </ListItem>
-            { <ListItem button aria-label="Download">
-              <DownloadIcon sx={{ mr: 1 }} />
-              <ListItemText primary="Download" />
-            </ListItem>}
             <Divider />
             <ListItem button aria-label="Versions">
               <VersionsIcon sx={{ mr: 1 }} />

@@ -187,7 +187,7 @@ export default function SidenavLeft() {
           ))}
         </List>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 3 , overflowX: 'auto'}}>
         <DrawerHeader />
         {currentPage === 'dashboard' && <Dashboard />}
         {currentPage === 'repository' && <RepositoryHome deletedFolders={deletedFolders} setDeletedFolders={setDeletedFolders} open={open} />}

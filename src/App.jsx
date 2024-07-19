@@ -21,7 +21,7 @@ function App() {
 
   useEffect(() => {
     document.body.style.overflowY = 'hidden'; 
-    document.body.style.overflowX = 'auto'; 
+    document.body.style.overflowX = 'hidden'; 
   }, [isLargeScreen]);
 
   const textDirection = ['ar'].includes(language) ? 'rtl' : 'ltr';
